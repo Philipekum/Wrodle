@@ -13,6 +13,4 @@ COPY app/ app/
 RUN useradd -m -u 1000 appuser
 USER appuser
 
-EXPOSE 8000
-
-CMD ["echo", "Hello!"]
+CMD ["uv", "run", "python", "main.py"]

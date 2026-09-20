@@ -1,0 +1,26 @@
+name: Wrodle
+
+services:
+  fastapi:
+    container_name: fastapi
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    env_file:
+      - .env
+    restart: unless-stopped
+    depends_on:
+      redis:
+        condition: service_healthy
+
+  redis:
+    build: ./redis
+    environment:
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - REDISCLI_AUTH=${REDIS_PASSWORD}
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+volumes:
+  redis_data:

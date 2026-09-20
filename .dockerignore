@@ -1,24 +1,71 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python caches
 __pycache__/
-fixtures/
-.pytest_cache/
-mini_front/node_modules/
-mini_front/dist/
-*.pyc
-*.pyo
-*.pyd
-env/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual envs
 .venv/
-.git/
-*.sqlite3
-*.xlsx
-*.txt
-*.csv
-*.db
+venv/
+env/
+ENV/
+
+# Test / lint / type caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.cache/
+.coverage
+htmlcov/
+coverage.xml
+.tox/
+.nox/
+
+# Build artifacts
+build/
+dist/
+wheels/
+*.egg-info/
+.eggs/
+
+# Secrets — никогда не попадают в образ
+.env
+.env.*
+!.env.example
+
+# Repomix
+repomix-output.md
+repomix.config.json
+
+# Tests не нужны в прод-образе
+tests/
+
+# CI configs
+.github/
+
+# Docs / meta
+README.md
+LICENSE
+CHANGELOG.md
+
+# IDE / OS
+.idea/
+.vscode/
+*.swp
 .DS_Store
-static/
+Thumbs.db
+
+# Logs
+*.log
 logs/
 
-!requirements.txt
-node_modules
-package-lock.json
-pytest.ini
+# Docker-specific
+docker-compose*.yaml
+Dockerfile
+.dockerignore

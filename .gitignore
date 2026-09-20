@@ -8,6 +8,36 @@ wheels/
 
 # Virtual environments
 .venv
+venv
 
 # Environment
 .env
+
+# IDEs
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Dev
+repomix-output.md
+repomix.config.json
+.cache/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+.Trash-*

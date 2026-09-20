@@ -6,3 +6,37 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = []
 license = { text = "MIT" }
+
+[dependency-groups]
+dev = [
+    "mypy>=2.3.1",
+    "pre-commit>=4.6.2",
+    "pytest>=9.1.1",
+    "ruff>=0.16.8",
+]
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version = "0.1.0"
+version_files = ["pyproject.toml:project.version"]
+tag_format = "v$version"
+update_changelog_on_bump = true
+annotated_tag = true
+bump_message = "release: bump version to $new_version"
+changelog_file = "CHANGELOG.md"
+changelog_incremental = true
+
+[tool.ruff]
+line-length = 88
+cache-dir = ".cache/ruff"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B"]
+
+[tool.mypy]
+strict = true
+cache_dir = ".cache/mypy"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+cache_dir = ".cache/pytest"
