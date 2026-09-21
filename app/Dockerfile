@@ -13,4 +13,4 @@ COPY app/ app/
 RUN useradd -m -u 1000 appuser
 USER appuser
 
-CMD ["uv", "run", "--no-sync", "app/main.py"]
+CMD ["uv", "run", "--no-sync", "uvicorn", "app.main:app"]

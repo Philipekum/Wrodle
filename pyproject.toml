@@ -4,7 +4,10 @@ version = "0.1.0"
 description = "A Wordle clone, created for my portfolio."
 readme = "README.md"
 requires-python = ">=3.14"
-dependencies = []
+dependencies = [
+    "fastapi>=0.141.1",
+    "uvicorn>=0.53.0",
+]
 license = { text = "MIT" }
 
 [dependency-groups]
