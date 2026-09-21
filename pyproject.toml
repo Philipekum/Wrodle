@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.14"
 dependencies = [
     "fastapi>=0.141.1",
+    "httpx2>=2.13.0",
     "uvicorn>=0.53.0",
 ]
 license = { text = "MIT" }
@@ -40,7 +41,11 @@ select = ["E", "F", "I", "B"]
 [tool.mypy]
 strict = true
 cache_dir = ".cache/mypy"
+exclude = ["tests"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 cache_dir = ".cache/pytest"
+filterwarnings = [
+    "ignore:The anyio.abc.BlockingPortal alias is deprecated:DeprecationWarning"
+]
