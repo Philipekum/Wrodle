@@ -1,4 +1,4 @@
-name: Wrodle
+name: wrodle
 
 services:
   fastapi:
