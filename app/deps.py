@@ -1,8 +1,7 @@
-from app.services.game_logic import Game
+from app.api.schemas import GameState
+
+_GAME_STATES: dict[str, GameState] = {}
 
 
-GAME = {}
-
-
-def get_db() -> dict[Game]:
-    return GAME
+def get_db() -> dict[str, GameState]:
+    return _GAME_STATES

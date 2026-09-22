@@ -1,74 +1,38 @@
-from enum import Enum
+import secrets
 from collections import Counter
-from dataclasses import dataclass, field
+
+from app.api.schemas import Attempt, Letter, LetterStatus
+from app.config import settings
 
 
-class Language(Enum):
-    EN = "english"
-    RU = "russian"
-
-
-@dataclass
-class Attempt:
-    word: list[Letter]
-    word_is_guessed: bool = False
-
-
-@dataclass
-class Game:
-    user_ip: str
-    language: Language
-    min_letters: int
-    max_letters: int
-    max_attempts: int
-    attempts: list[Attempt] = field(default_factory=list)
-    is_finished: bool = False
-
-
-class LetterStatus(Enum):
-    PENDING = "pending"
-    GUESSED = "guessed"
-    WRONG_PLACE = "wrong_place"
-    WRONG = "wrong"
-
-
-@dataclass
-class Letter:
-    letter: str
-    status: LetterStatus = "pending"
-
-
-def preprocess_word(word: str) -> str:
-    return word.strip().casefold()
-
-
-def get_word() -> str:
+def get_target_word() -> str:
     return "bebra"
 
 
-def parse_word(word: str) -> list[Letter]:
-    return [Letter(letter) for letter in word]
+def generate_game_id() -> str:
+    return secrets.token_urlsafe(settings.GAME_ID_LEN)[: settings.GAME_ID_LEN].lower()
 
 
-def process_attempt(attempt: Attempt) -> Attempt:
-    right_word = get_word()
-    right_letters_count = Counter(right_word)
+def resolve_attempt(guess: str, target: str) -> Attempt:
+    target_counts = Counter(target)
+    letters: list[Letter] = []
 
-    for i, letter in enumerate(attempt.letters):
-        if letter.letter == right_word[i]:
-            letter.status = "guessed"
-            right_letters_count[letter.letter] -= 1
+    for i, ch in enumerate(guess):
+        if ch == target[i]:
+            letters.append(Letter(letter=ch, status=LetterStatus.GUESSED))
+            target_counts[ch] -= 1
+        else:
+            letters.append(Letter(letter=ch))
 
-    guessed = 0
-
-    for letter in attempt.letters:
-        if letter.status == "guessed":
-            guessed += 1
+    for letter in letters:
+        if letter.status == LetterStatus.GUESSED:
             continue
 
-        if letter.letter in right_word and right_letters_count[letter.letter] > 0:
-            letter.status = "wrong_place"
-            right_letters_count[letter.letter] -= 1
+        if target_counts[letter.letter] > 0:
+            letter.status = LetterStatus.WRONG_PLACE
+            target_counts[letter.letter] -= 1
 
-    attempt.word_is_guessed = guessed == len(attempt.word)
-    return attempt
+        else:
+            letter.status = LetterStatus.WRONG
+
+    return Attempt(word=guess, letters=letters)

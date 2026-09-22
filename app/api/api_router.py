@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 
-from app.api.routes import utils, game
+from app.api.routes import game, utils
 
 api_router = APIRouter()
 

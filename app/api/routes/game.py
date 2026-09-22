@@ -1,52 +1,73 @@
-import hashlib
-from fastapi import APIRouter, Request, Response, Depends
-from app.config import MIN_WORD, MAX_WORD, MAX_ATTEMPTS
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+
+from app.api.schemas import AttemptRequest, GameInitRequest, GameResponse, GameState
+from app.config import PRESETS
 from app.deps import get_db
 from app.services.game_logic import (
-    process_attempt, 
-    parse_word, 
-    preprocess_word,
-    Game,
-    Attempt
+    generate_game_id,
+    get_target_word,
+    resolve_attempt,
 )
 
 router = APIRouter(tags=["game"])
 
 
-@router.get("/init_game")
-def init_game(request: Request, db: dict[Game] = Depends(get_db)) -> str:
-    game = Game(
-        user_ip=request.client.host,
-        language="english",
-        min_letters=MIN_WORD,
-        max_letters=MAX_WORD,
-        max_attempts=MAX_ATTEMPTS,
+@router.get("/games/init", response_model=GameResponse)
+def init_game(
+    game_settings: GameInitRequest,
+    request: Request,
+    db: dict[str, GameState] = Depends(get_db),
+) -> GameResponse:
+
+    if request.client is None or request.client.host:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
+
+    game_id = generate_game_id()
+
+    while game_id in db.keys():
+        game_id = generate_game_id()
+
+    state = GameState(
+        game_id=game_id,
+        language=game_settings.language,
+        rules=PRESETS[game_settings.difficulty],
+        target_word=get_target_word(),
     )
-    game_id = hashlib.sha256(f'{game.user_ip}:{game.min_letters}:{game.max_letters}:{game.language}'.encode()).hexdigest()
-    db[game_id] = game
-    return game_id
+
+    db[game_id] = state
+
+    return GameResponse.model_validate(state, from_attributes=True)
 
 
-@router.post("/guess_word")
-def guess_word(word: str, game_id: str, db: dict[Game] = Depends(get_db)) -> Game:
-    game = db.get(game_id)
+@router.post("/games/{game_id}/attempts", response_model=GameResponse)
+def make_attempt(
+    game_id: str, request: AttemptRequest, db: dict[str, GameState] = Depends(get_db)
+) -> GameResponse:
 
-    if game is None:
-        return "Game is not init"
+    state = db.get(game_id)
 
-    if game.is_finished:
-        return "Game finished!"
-    
-    word = preprocess_word(word)
-    attempt = Attempt(word=parse_word(word))
-    
-    if len(game.attempts) == game.max_attempts:
-        return f"Game over: {len(game.attempts)}/{game.max_attempts} attempts"
-    
-    attempt = process_attempt(attempt)
-    game.attempts.append(attempt)
+    if state is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Game not found",
+        )
+
+    if len(state.attempts) >= state.rules.max_attempts:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="No attempts left",
+        )
+
+    if state.is_finished:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Game is already finished",
+        )
+
+    attempt = resolve_attempt(request.word, state.target_word)
+    state.attempts.append(attempt)
 
     if attempt.word_is_guessed:
-        return "You win!"
+        state.is_finished = True
 
-    return game
+    return GameResponse.model_validate(state, from_attributes=True)
