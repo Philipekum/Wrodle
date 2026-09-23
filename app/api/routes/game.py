@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, HTTPException, status
 
 from app.api.schemas import AttemptRequest, GameInitRequest, GameResponse, GameState
 from app.config import PRESETS
@@ -12,16 +12,12 @@ from app.services.game_logic import (
 router = APIRouter(tags=["game"])
 
 
-@router.get("/games/init", response_model=GameResponse)
+@router.post("/games/init", response_model=GameResponse)
 def init_game(
     game_settings: GameInitRequest,
-    request: Request,
     db: dict[str, GameState] = Depends(get_db),
 ) -> GameResponse:
-
-    if request.client is None or request.client.host:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST)
-
+    
     game_id = generate_game_id()
 
     while game_id in db.keys():
