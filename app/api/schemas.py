@@ -58,7 +58,7 @@ class GameBase(BaseModel):
 
 
 class GameResponse(GameBase):
-    message: str
+    pass
 
 
 class GameState(GameBase):
