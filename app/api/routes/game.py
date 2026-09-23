@@ -20,7 +20,7 @@ def init_game(
     
     game_id = generate_game_id()
 
-    while game_id in db.keys():
+    while game_id in db:
         game_id = generate_game_id()
 
     state = GameState(
