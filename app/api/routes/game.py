@@ -1,6 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 
-from app.api.schemas import AttemptRequest, GameInitRequest, GameResponse, GameState
+from app.api.schemas import (
+    AttemptRequest,
+    GameInitRequest,
+    GameResponse,
+    GameState,
+)
 from app.config import PRESETS
 from app.deps import get_db
 from app.services.game_logic import (
@@ -48,22 +53,10 @@ def make_attempt(
             detail="Game not found",
         )
 
-    if len(state.attempts) >= state.rules.max_attempts:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="No attempts left",
-        )
+    try:
+        state.add_attempt(resolve_attempt(request.word, state.target_word))
 
-    if state.is_finished:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="Game is already finished",
-        )
-
-    attempt = resolve_attempt(request.word, state.target_word)
-    state.attempts.append(attempt)
-
-    if attempt.word_is_guessed:
-        state.is_finished = True
+    except ValueError as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, detail=(e)) from e
 
     return GameResponse.model_validate(state, from_attributes=True)
