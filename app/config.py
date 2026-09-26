@@ -1,6 +1,7 @@
 from enum import StrEnum
+from typing import cast
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -14,13 +15,18 @@ class AppSettings(BaseSettings):
     PROJECT_NAME: str = "Wrodle"
 
     DEFAULT_DIFFICULTY: GameDifficulty = GameDifficulty.CLASSIC
-    MIN_WORD = 3
-    MAX_WORD = 10
-    MIN_ATTEMPTS = 1
-    MAX_ATTEMPTS = 12
-    GAME_ID_LEN = 5
+    MIN_WORD: int = 3
+    MAX_WORD: int = 10
+    MIN_ATTEMPTS: int = 1
+    MAX_ATTEMPTS: int = 12
+    GAME_ID_LEN: int = 5
+    REDIS_PASSWORD: SecretStr = Field(default=cast(SecretStr, None))
 
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=True)
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        case_sensitive=True,
+        extra="forbid",
+    )
 
 
 settings = AppSettings()
