@@ -30,8 +30,8 @@ class Attempt(BaseModel):
     word: ValidatedWord
     letters: list[Letter]
 
+    @computed_field  # type: ignore[prop-decorator]
     @property
-    @computed_field
     def word_is_guessed(self) -> bool:
         return bool(self.letters) and all(
             letter.status == LetterStatus.GUESSED for letter in self.letters
